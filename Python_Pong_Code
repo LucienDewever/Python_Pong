@@ -1,0 +1,168 @@
+"""
+Author: Lucien Dewever
+Project: Python Pong Game
+Inspiration and Influence from: www.youtube.com/c/TokyoEdTech/
+"""
+
+import turtle
+import winsound
+import random
+
+window = turtle.Screen()
+window.title("Pong by SullenAvarice")
+window.bgcolor("black")
+window.setup(width = 800, height = 600)
+window.tracer(0);
+
+#score vars
+scoreOne = 0
+scoreTwo = 0
+
+#Paddle One
+paddleOne = turtle.Turtle()
+paddleOne.speed(0)
+paddleOne.shape("square")
+paddleOne.color("white")
+paddleOne.shapesize(stretch_wid=5, stretch_len=1)
+paddleOne.penup()
+paddleOne.goto(-350, 0)
+
+#Paddle Two
+paddleTwo = turtle.Turtle()
+paddleTwo.speed(15)
+paddleTwo.shape("square")
+paddleTwo.color("white")
+paddleTwo.shapesize(stretch_wid=5, stretch_len=1)
+paddleTwo.penup()
+paddleTwo.goto(350, 0)
+
+#Ball
+Ball = turtle.Turtle()
+Ball.speed(0)
+Ball.shape("square")
+Ball.color("white")
+Ball.penup()
+Ball.goto(0, 0)
+Ball.dx = .5
+Ball.dy = -.5
+
+#Score Keeper
+pen = turtle.Turtle()
+pen.speed(0)
+pen.color("white")
+pen.penup()
+pen.hideturtle()
+pen.goto(0, 260)
+pen.write("Player One: 0  ||  Player Two: 0", align = 'center', font = ('Courier', 24, 'normal'))
+
+#functions
+def paddleOneUp():
+    y = paddleOne.ycor()
+    if y < 250:
+        y += 20
+        paddleOne.sety(y)
+
+def paddleOneDown():
+    y = paddleOne.ycor()
+    if y > -250:
+        y -= 20
+        paddleOne.sety(y)
+
+def paddleTwoUp():
+    y = paddleTwo.ycor()
+    if y < 250:
+        y += 20
+        paddleTwo.sety(y)
+
+def paddleTwoDown():
+    y = paddleTwo.ycor()
+    if y > -250:
+        y -= 20
+        paddleTwo.sety(y)
+
+#KeyBind
+window.listen()
+window.onkeypress(paddleOneUp, "w")
+window.onkeypress(paddleOneDown, "s")
+window.onkeypress(paddleTwoUp, "Up")
+window.onkeypress(paddleTwoDown, "Down")
+
+#main game loop
+while True:
+    window.update()
+
+    soundChooser = random.randrange(1, 3)
+    
+    if soundChooser == 1:
+        sound = "PaddleRicochetOne.wav"
+    else:
+        sound = "PaddleRicochetTwo.wav"
+
+    #move the ball
+    Ball.setx(Ball.xcor() + Ball.dx)
+    Ball.sety(Ball.ycor() + Ball.dy)
+
+    #border checking
+    #ball hits roof
+    if Ball.ycor() > 290:
+        Ball.sety(290)
+        Ball.dy *= -1
+        winsound.PlaySound("WallRicochet.wav", winsound.SND_ASYNC)
+
+    #ball hits floor
+    if Ball.ycor() < -290:
+        Ball.sety(-290)
+        Ball.dy *= -1
+        winsound.PlaySound("WallRicochet.wav", winsound.SND_ASYNC)
+
+
+    #ball hits right wall
+    if Ball.xcor() > 390:
+        Ball.goto(0, 0)
+        Ball.dx *= -1
+        scoreOne += 1
+        winsound.PlaySound("PointGained.wav", winsound.SND_ASYNC)
+        pen.clear()
+        pen.write("Player One: {}  ||  Player Two: {}".format(scoreOne, scoreTwo), align = 'center', font = ('Courier', 24, 'normal'))
+
+    #ball hits left wall
+    if Ball.xcor() < -390:
+        Ball.goto(0, 0)
+        Ball.dx *= -1
+        scoreTwo += 1
+        winsound.PlaySound("PointGained.wav", winsound.SND_ASYNC)
+        pen.clear()
+        pen.write("Player One: {}  ||  Player Two: {}".format(scoreOne, scoreTwo), align = 'center', font = ('Courier', 24, 'normal'))
+
+
+    #paddle collision
+    #right paddle
+    if Ball.xcor() > 340 and Ball.xcor() < 360 and (Ball.ycor() < paddleTwo.ycor() + 40 and Ball.ycor() > paddleTwo.ycor() -50):
+        Ball.setx(340)
+        Ball.dx *= -1
+        winsound.PlaySound(sound, winsound.SND_ASYNC)
+
+
+    #left paddle
+    if Ball.xcor() < -340 and Ball.xcor() > -360 and (Ball.ycor() < paddleOne.ycor() + 40 and Ball.ycor() > paddleOne.ycor() -50):
+        Ball.setx(-340)
+        Ball.dx *= -1
+        winsound.PlaySound(sound, winsound.SND_ASYNC)
+
+
+    #ai player
+    if paddleTwo.ycor() < Ball.ycor(): #and abs(paddleTwo.ycor() - Ball.ycor()) > 50:
+        if Ball.ycor() < 300:
+            if abs(paddleTwo.ycor() - Ball.ycor()) > 55:
+                paddleTwoUp()
+        else:
+            if abs(paddleTwo.ycor() - Ball.ycor()) > 10:
+                paddleTwoUp()
+    elif paddleTwo.ycor() > Ball.ycor(): #and abs(paddleTwo.ycor() - Ball.ycor()) > 50:
+        if Ball.ycor() < 300:
+            if abs(paddleTwo.ycor() - Ball.ycor()) > 55:
+                paddleTwoDown()
+        else:
+            if abs(paddleTwo.ycor() - Ball.ycor()) > 10:
+                paddleTwoDown()
+        
